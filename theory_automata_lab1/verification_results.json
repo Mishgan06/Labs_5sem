@@ -1,0 +1,64 @@
+{
+  "variant": 11,
+  "reachable_moore_states": 13,
+  "minimal_moore_states": 7,
+  "minimal_mealy_states": 5,
+  "triangular_mark_counts": {
+    "0": 36,
+    "1": 20,
+    "2": 3,
+    "3": 2,
+    "4": 9
+  },
+  "equivalent_pairs": [
+    "S0–S3",
+    "S0–S10",
+    "S1–S4",
+    "S1–S11",
+    "S2–S5",
+    "S3–S10",
+    "S4–S11",
+    "S6–S9"
+  ],
+  "tested_words": [
+    {
+      "input": "abcacbacbcab",
+      "mealy": "yyyxyyxyyyxy",
+      "moore": "yyyyxyyxyyyxy"
+    },
+    {
+      "input": "aaaaaa",
+      "mealy": "yxyxyx",
+      "moore": "yyxyxyx"
+    },
+    {
+      "input": "bbbbbb",
+      "mealy": "yyyyyy",
+      "moore": "yyyyyyy"
+    },
+    {
+      "input": "cccccc",
+      "mealy": "yyyyyy",
+      "moore": "yyyyyyy"
+    },
+    {
+      "input": "abcabc",
+      "mealy": "yyyxyy",
+      "moore": "yyyyxyy"
+    },
+    {
+      "input": "acbacbac",
+      "mealy": "yyyxyyxy",
+      "moore": "yyyyxyyxy"
+    },
+    {
+      "input": "aabccbaabc",
+      "mealy": "yxyyyyxyyy",
+      "moore": "yyxyyyyxyyy"
+    }
+  ],
+  "exhaustive_words_checked": 9841,
+  "product_states_checked": 13,
+  "status": "PASS",
+  "jflap_gui_executed": false
+}
