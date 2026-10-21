@@ -1,0 +1,13 @@
+Минимизированный Мура, 7 состояний
+abcacbacbcab => yyyyxyyxyyyxy PASS
+aaaaaa => yyxyxyx PASS
+bbbbbb => yyyyyyy PASS
+cccccc => yyyyyyy PASS
+abcabc => yyyyxyy PASS
+
+Достижимая часть исходного Мура, 13 состояний
+abcacbacbcab => yyyyxyyxyyyxy PASS
+aaaaaa => yyxyxyx PASS
+bbbbbb => yyyyyyy PASS
+cccccc => yyyyyyy PASS
+abcabc => yyyyxyy PASS

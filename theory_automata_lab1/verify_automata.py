@@ -87,6 +87,9 @@ def verify_model(name,kind,expected,outputs,start):
         key=int(edge.findtext('from')),ABC.index(edge.findtext('read'))
         assert key not in found
         found[key]=(int(edge.findtext('to')),edge.findtext('transout')) if kind=='mealy' else int(edge.findtext('to'))
+    if kind=='moore':
+        for edge in auto.findall('transition'):
+            assert edge.findtext('transout')==outputs[int(edge.findtext('to'))]
     assert len(found)==3*len(expected)
     for i,row in enumerate(expected):
         for a,value in enumerate(row):assert found[i,a]==value,(name,i,a)
