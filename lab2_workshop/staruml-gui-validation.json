@@ -1,0 +1,26 @@
+{
+  "application": "StarUML 7.1.1 Linux",
+  "mode": "Official trial mode",
+  "master": {
+    "diagrams": 3,
+    "validationErrors": []
+  },
+  "separateProjects": [
+    {
+      "file": "01_states.mdj",
+      "diagram": "Состояния объекта «Заказ на ремонт»",
+      "errors": []
+    },
+    {
+      "file": "02_application.mdj",
+      "diagram": "Активность «Оформление заявки на ремонт»",
+      "errors": []
+    },
+    {
+      "file": "03_diagnosis.mdj",
+      "diagram": "Диагностика и согласование стоимости",
+      "errors": []
+    }
+  ],
+  "screenshots": "Actual X11 application window captures; no compositing or redrawing"
+}
