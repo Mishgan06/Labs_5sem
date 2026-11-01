@@ -1,0 +1,457 @@
+[
+  {
+    "test": "card(1)",
+    "result": {
+      "ok": true,
+      "sets": [
+        [
+          {
+            "carId": "1",
+            "brand": "Lada Vesta",
+            "releaseYear": "2020",
+            "price": "950000.00",
+            "citizenId": "2",
+            "surname": "Петрова",
+            "name": "Мария",
+            "accident_count": "2",
+            "accident_status": "HAS_ACCIDENTS"
+          }
+        ],
+        [
+          {
+            "status": "OK",
+            "total": "2"
+          }
+        ]
+      ]
+    }
+  },
+  {
+    "test": "card(9)",
+    "result": {
+      "ok": true,
+      "sets": [
+        [
+          {
+            "carId": "9",
+            "brand": "Ford Focus",
+            "releaseYear": "2016",
+            "price": "900000.00",
+            "citizenId": "8",
+            "surname": "Новикова",
+            "name": "Ольга",
+            "accident_count": "0",
+            "accident_status": "NO_ACCIDENTS"
+          }
+        ],
+        [
+          {
+            "status": "OK",
+            "total": "0"
+          }
+        ]
+      ]
+    }
+  },
+  {
+    "test": "months(2025)",
+    "result": {
+      "ok": true,
+      "sets": [
+        [
+          {
+            "report_year": "2025",
+            "month_no": "1",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2025",
+            "month_no": "2",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2025",
+            "month_no": "3",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2025",
+            "month_no": "4",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2025",
+            "month_no": "5",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2025",
+            "month_no": "6",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2025",
+            "month_no": "7",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2025",
+            "month_no": "8",
+            "accident_count": "1",
+            "month_status": "HAS_DATA"
+          },
+          {
+            "report_year": "2025",
+            "month_no": "9",
+            "accident_count": "2",
+            "month_status": "HAS_DATA"
+          },
+          {
+            "report_year": "2025",
+            "month_no": "10",
+            "accident_count": "2",
+            "month_status": "HAS_DATA"
+          },
+          {
+            "report_year": "2025",
+            "month_no": "11",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2025",
+            "month_no": "12",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          }
+        ],
+        [
+          {
+            "status": "OK",
+            "total": "5"
+          }
+        ]
+      ]
+    }
+  },
+  {
+    "test": "months(2024)",
+    "result": {
+      "ok": true,
+      "sets": [
+        [
+          {
+            "report_year": "2024",
+            "month_no": "1",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2024",
+            "month_no": "2",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2024",
+            "month_no": "3",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2024",
+            "month_no": "4",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2024",
+            "month_no": "5",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2024",
+            "month_no": "6",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2024",
+            "month_no": "7",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2024",
+            "month_no": "8",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2024",
+            "month_no": "9",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2024",
+            "month_no": "10",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2024",
+            "month_no": "11",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2024",
+            "month_no": "12",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          }
+        ],
+        [
+          {
+            "status": "OK",
+            "total": "0"
+          }
+        ]
+      ]
+    }
+  },
+  {
+    "test": "months(1901)",
+    "result": {
+      "ok": true,
+      "sets": [
+        [
+          {
+            "report_year": "1901",
+            "month_no": "1",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "1901",
+            "month_no": "2",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "1901",
+            "month_no": "3",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "1901",
+            "month_no": "4",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "1901",
+            "month_no": "5",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "1901",
+            "month_no": "6",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "1901",
+            "month_no": "7",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "1901",
+            "month_no": "8",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "1901",
+            "month_no": "9",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "1901",
+            "month_no": "10",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "1901",
+            "month_no": "11",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "1901",
+            "month_no": "12",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          }
+        ],
+        [
+          {
+            "status": "OK",
+            "total": "0"
+          }
+        ]
+      ]
+    }
+  },
+  {
+    "test": "months(2155)",
+    "result": {
+      "ok": true,
+      "sets": [
+        [
+          {
+            "report_year": "2155",
+            "month_no": "1",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2155",
+            "month_no": "2",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2155",
+            "month_no": "3",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2155",
+            "month_no": "4",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2155",
+            "month_no": "5",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2155",
+            "month_no": "6",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2155",
+            "month_no": "7",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2155",
+            "month_no": "8",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2155",
+            "month_no": "9",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2155",
+            "month_no": "10",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2155",
+            "month_no": "11",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          },
+          {
+            "report_year": "2155",
+            "month_no": "12",
+            "accident_count": "0",
+            "month_status": "NO_DATA"
+          }
+        ],
+        [
+          {
+            "status": "OK",
+            "total": "0"
+          }
+        ]
+      ]
+    }
+  },
+  {
+    "test": "lr6_car_card(NULL)",
+    "result": {
+      "ok": false,
+      "error": "ERROR 1644 (45000) at line 1: carId must be a positive integer"
+    }
+  },
+  {
+    "test": "lr6_car_card(0)",
+    "result": {
+      "ok": false,
+      "error": "ERROR 1644 (45000) at line 1: carId must be a positive integer"
+    }
+  },
+  {
+    "test": "lr6_car_card(-1)",
+    "result": {
+      "ok": false,
+      "error": "ERROR 1644 (45000) at line 1: carId must be a positive integer"
+    }
+  },
+  {
+    "test": "lr6_car_card(999999)",
+    "result": {
+      "ok": false,
+      "error": "ERROR 1644 (45000) at line 1: Car with this carId does not exist"
+    }
+  },
+  {
+    "test": "lr6_accidents_by_month(NULL)",
+    "result": {
+      "ok": false,
+      "error": "ERROR 1644 (45000) at line 1: Year must be between 1901 and 2155"
+    }
+  },
+  {
+    "test": "lr6_accidents_by_month(1900)",
+    "result": {
+      "ok": false,
+      "error": "ERROR 1644 (45000) at line 1: Year must be between 1901 and 2155"
+    }
+  },
+  {
+    "test": "lr6_accidents_by_month(2156)",
+    "result": {
+      "ok": false,
+      "error": "ERROR 1644 (45000) at line 1: Year must be between 1901 and 2155"
+    }
+  }
+]

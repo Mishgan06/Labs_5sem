@@ -1,0 +1,12 @@
+ERROR 1644 (45000) at line 3: carId must be a positive integer
+ERROR 1644 (45000) at line 4: carId must be a positive integer
+ERROR 1644 (45000) at line 5: carId must be a positive integer
+ERROR 1644 (45000) at line 6: Car with this carId does not exist
+ERROR 1644 (45000) at line 7: Year must be between 1901 and 2155
+ERROR 1644 (45000) at line 8: Year must be between 1901 and 2155
+ERROR 1644 (45000) at line 9: Year must be between 1901 and 2155
++-------------+--------------------------+----------------------+
+| @lr6_status | @lr6_last_accident_count | @lr6_last_year_total |
++-------------+--------------------------+----------------------+
+| ERROR       | NULL                     | NULL                 |
++-------------+--------------------------+----------------------+
