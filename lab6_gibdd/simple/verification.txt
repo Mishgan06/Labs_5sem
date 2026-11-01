@@ -1,0 +1,21 @@
+procedure(2025) OK
+procedure(2024) OK
+procedure(1901) OK
+procedure(2155) OK
+procedure(NULL) invalid OK
+procedure(1900) invalid OK
+procedure(2156) invalid OK
+car function(1) OK
+car function(9) OK
+car function(NULL) OK
+car function(0) OK
+car function(-1) OK
+car function(999999) OK
+year function(2025) OK
+year function(2024) OK
+year function(1901) OK
+year function(2155) OK
+year function(NULL) OK
+year function(1900) OK
+year function(2156) OK
+20 tests passed; all five base tables unchanged.
