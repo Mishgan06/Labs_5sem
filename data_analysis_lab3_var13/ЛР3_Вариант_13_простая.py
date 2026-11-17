@@ -13,7 +13,6 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from pathlib import Path
 from IPython.display import display
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler
@@ -22,16 +21,11 @@ from sklearn.neighbors import KNeighborsRegressor
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
-# В Colab выберите два файла: regression (1).xlsx и salary.csv.
-try:
-    from google.colab import files
-    files.upload()
-except ImportError:
-    pass
+excel_file = '/content/regression (1).xlsx'  # Укажите путь к Excel.
+salary_file = '/content/salary.csv'  # Укажите путь к CSV.
 
-excel_file = next(Path('.').glob('regression*.xlsx'))
 df = pd.read_excel(excel_file, sheet_name='var3')
-salary = pd.read_csv('salary.csv')
+salary = pd.read_csv(salary_file)
 
 # Одна функция для одинакового расчёта метрик всех моделей.
 def metrics(y, prediction):
@@ -81,19 +75,21 @@ for feature in ['x1', 'x2']:
 
     fig, axes = plt.subplots(1, 3, figsize=(16, 4))
     x_line = pd.DataFrame({feature: np.linspace(df[feature].min(), df[feature].max(), 200)})
-    axes[0].scatter(df[feature], df['y'], s=10, alpha=0.4)
-    axes[0].plot(x_line[feature], model.predict(x_line), color='red')
+    axes[0].scatter(df[feature], df['y'], s=10, alpha=0.4, label='Наблюдения')
+    axes[0].plot(x_line[feature], model.predict(x_line), color='red', label='Линейная регрессия')
     axes[0].set(xlabel=feature, ylabel='y', title='Линия регрессии')
     errors = comparison.sort_index()['Прогноз − факт']
-    axes[1].scatter(errors.index, errors, s=12)
-    axes[1].axhline(0, color='red')
+    axes[1].scatter(errors.index, errors, s=12, label='Прогноз − факт')
+    axes[1].axhline(0, color='red', label='Нулевая ошибка')
     axes[1].set(xlabel='Индекс наблюдения', ylabel='Прогноз − факт', title='Ошибки валидации')
     lo = min(y_valid_reg.min(), prediction.min())
     hi = max(y_valid_reg.max(), prediction.max())
-    axes[2].scatter(y_valid_reg, prediction, s=12)
-    axes[2].plot([lo, hi], [lo, hi], color='red')
+    axes[2].scatter(y_valid_reg, prediction, s=12, label='Прогнозы на валидации')
+    axes[2].plot([lo, hi], [lo, hi], color='red', label='Идеальное совпадение')
     axes[2].set(xlabel='Факт', ylabel='Прогноз', title='Факт и прогноз')
     axes[2].set_aspect('equal', adjustable='box')
+    for ax in axes:
+        ax.legend(fontsize=8)
     plt.tight_layout()
     plt.show()
 
@@ -129,9 +125,11 @@ for ax, degree in zip(axes, [2, 3]):
     print('Степень:', degree)
     display(pd.DataFrame({'Факт': y_valid_reg, 'Прогноз': valid_prediction}).head(20))
     x_line = pd.DataFrame({'x2': np.linspace(df['x2'].min(), df['x2'].max(), 200)})
-    ax.scatter(df['x2'], df['y'], s=10, alpha=0.4)
-    ax.plot(x_line['x2'], model_poly.predict(poly.transform(x_line)), color='red')
+    ax.scatter(df['x2'], df['y'], s=10, alpha=0.4, label='Наблюдения')
+    ax.plot(x_line['x2'], model_poly.predict(poly.transform(x_line)), color='red',
+            label=f'Полином степени {degree}')
     ax.set(xlabel='x2', ylabel='y', title=f'Степень {degree}')
+    ax.legend(fontsize=8)
 
 plt.tight_layout()
 plt.show()
@@ -163,9 +161,13 @@ for column in salary.select_dtypes(include='object'):
     print(column, ':', salary[column].unique())
 
 fig, axes = plt.subplots(1, 2, figsize=(12, 4))
-axes[0].hist(salary['salary'], bins=30)
+axes[0].hist(salary['salary'], bins=30, label='Все 1500 наблюдений')
 axes[0].set(xlabel='Годовая зарплата', ylabel='Количество', title='Распределение salary')
-axes[1].boxplot(salary['salary'])
+salary_box = axes[1].boxplot(
+    salary['salary'], patch_artist=True, boxprops={'facecolor': 'lightblue'}
+)
+axes[0].legend(fontsize=8)
+axes[1].legend([salary_box['boxes'][0]], ['Распределение salary'], fontsize=8)
 axes[1].set(ylabel='Годовая зарплата', title='Boxplot salary')
 plt.tight_layout()
 plt.show()
@@ -173,35 +175,32 @@ plt.show()
 
 # %% [markdown]
 # ### 3–6. Подготовка данных
-# В файле 1500 строк, пропусков и дубликатов нет. На гистограмме видны редкие очень большие зарплаты. В учебном эксперименте исключаю из **обучающей части** значения зарплаты за границами 1,5 IQR. Границы считаю только на train, а валидацию сохраняю полностью. Так проверяется и качество на редких больших зарплатах. Такое удаление — принятое правило подготовки, а не доказательство ошибки в исходных строках.
+# Все 1500 строк исходного salary.csv сохраняются. Экстремальные значения не удаляются, не ограничиваются и не заменяются. Специальная обработка выбросов не выполняется согласно уточнению преподавателя.
 # 
-# Разбиение выполняю до обработки, чтобы информация из валидации не влияла на обучение. Категории кодирую через `get_dummies(drop_first=True)`. Числовые признаки стандартизирую по train. Масштабирование особенно важно для kNN.
+# Данные разделяются на 1125 обучающих и 375 валидационных строк. Категории преобразуются через get_dummies(drop_first=True), числовые признаки стандартизируются с помощью StandardScaler. Стандартизатор обучается только на train, затем применяется к valid. Целевая зарплата не масштабируется и не обрезается.
 
 # %%
 X = salary.drop(columns='salary')
 y = salary['salary']
 X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=0.25, random_state=42)
 
-q1, q3 = y_train.quantile([0.25, 0.75])
-iqr = q3 - q1
-keep = y_train.between(q1 - 1.5 * iqr, q3 + 1.5 * iqr)
-print('Строк до обработки:', len(y_train))
-print('Исключено из train:', (~keep).sum())
-X_train = X_train.loc[keep].copy()
-y_train = y_train.loc[keep].copy()
-print('После обработки:', len(y_train), 'Валидация:', len(y_valid))
-
-fig, axes = plt.subplots(1, 2, figsize=(12, 4))
-axes[0].hist(y_train, bins=30)
-axes[0].set(xlabel='Годовая зарплата', ylabel='Количество', title='Train после обработки')
-axes[1].boxplot(y_train)
-axes[1].set(ylabel='Годовая зарплата', title='Train после обработки')
-plt.tight_layout()
-plt.show()
+print('Исходных строк:', len(salary))
+print('Обучение:', len(y_train), 'Валидация:', len(y_valid))
+assert len(y_train) + len(y_valid) == len(salary)
+assert set(X_train.index).isdisjoint(X_valid.index)
 
 # Матрица рассеяния всех числовых признаков и цели на обучающих строках.
 scatter_data = X_train.select_dtypes(include='number').assign(salary=y_train)
-pd.plotting.scatter_matrix(scatter_data, figsize=(17, 17), diagonal='hist', alpha=0.2, s=5)
+scatter_axes = pd.plotting.scatter_matrix(
+    scatter_data, figsize=(17, 17), diagonal='hist', alpha=0.2, s=5
+)
+scatter_figure = scatter_axes[0, 0].figure
+scatter_figure.legend(
+    handles=[scatter_axes[0, 1].collections[0]],
+    labels=['Наблюдения train; на диагонали — гистограммы'],
+    loc='upper center', fontsize=10
+)
+scatter_figure.subplots_adjust(top=0.96)
 plt.show()
 
 numeric_columns = X_train.select_dtypes(include='number').columns
@@ -243,9 +242,9 @@ with pd.option_context('display.max_rows', None):
 
 # %% [markdown]
 # ### 10. Коэффициенты линейной регрессии
-# Коэффициент числового признака показывает изменение прогноза при росте признака на одно стандартное отклонение, остальные признаки фиксированы. Коэффициент категории — разницу с базовой категорией. Эти два типа коэффициентов имеют разный смысл, поэтому их модули нельзя безусловно считать общим рейтингом важности. Связь с прогнозом не доказывает причинное влияние.
+# Коэффициент числового признака показывает изменение прогноза при росте признака на одно стандартное отклонение train, остальные признаки фиксированы. Коэффициент категории показывает отличие от базовой категории. Эти коэффициенты имеют разный смысл, поэтому их модули нельзя безусловно считать общим рейтингом важности. Связь с прогнозом не доказывает причинное влияние.
 # 
-# Среди числовых признаков наибольшие по модулю коэффициенты у experience, income, score_test. Их вклад сравнивается после стандартизации.
+# Среди числовых признаков наибольшие по модулю коэффициенты: experience, score_test, debt.
 
 # %%
 coefficients = pd.DataFrame({'Признак': X_train.columns,
@@ -265,12 +264,13 @@ for column in salary.select_dtypes(include='object'):
 # %%
 fig, axes = plt.subplots(1, 3, figsize=(16, 5))
 for ax, (name, prediction) in zip(axes, predictions.items()):
-    ax.scatter(y_valid, prediction, s=15, alpha=0.5)
+    ax.scatter(y_valid, prediction, s=15, alpha=0.5, label='Прогнозы на валидации')
     lo = min(y_valid.min(), prediction.min())
     hi = max(y_valid.max(), prediction.max())
-    ax.plot([lo, hi], [lo, hi], color='red')
+    ax.plot([lo, hi], [lo, hi], color='red', label='Идеальное совпадение')
     ax.set(xlabel='Фактическая зарплата', ylabel='Прогноз зарплаты', title=name)
     ax.set_aspect('equal', adjustable='box')
+    ax.legend(fontsize=8)
 plt.tight_layout()
 plt.show()
 
@@ -287,9 +287,7 @@ plt.show()
 
 # %% [markdown]
 # ### 14. Вывод по задаче зарплаты
-# Сравниваю методы по общей валидационной выборке. При выборе по MAE предпочтительна модель с наименьшей средней абсолютной ошибкой. Если R² отрицательный, модель по квадрату ошибки хуже прогноза среднего на оцениваемой выборке. Даже небольшая MAE для обычных зарплат не гарантирует точного прогноза редких высоких значений.
-# 
-# По MAE выбираю метод «Линейная регрессия»: MAE = 20703.27, R² = -0.0141. У всех трёх методов R² отрицателен: большие зарплаты на графиках остаются недооценёнными. Поэтому этот выбор относится к средней абсолютной ошибке, а не к хорошему прогнозу всего диапазона зарплат.
+# Методы сравниваются на одной валидационной выборке из 375 строк. Выбор по MAE и по RMSE может различаться. Отрицательный R² означает результат по квадрату ошибки хуже прогноза среднего на оцениваемой выборке. На полной выборке сохранены 1500 строк (train 1125, valid 375). По MAE минимальная ошибка у метода «Линейная регрессия»: 34926.60. По RMSE минимальная ошибка у метода «Линейная регрессия»: 106030.04. У всех трёх моделей R² отрицательный: качество по квадрату ошибки не превосходит прогноз среднего оцениваемой выборки. Это ограничение результата, а не причина удалять неудобные наблюдения.
 
 # %%
 best = result_table['MAE'].idxmin()
@@ -303,8 +301,10 @@ display(coefficients[coefficients['Признак'].isin(numeric_columns)].nlarg
 
 # %% [markdown]
 # ## Общий вывод
-# В работе выполнены простая и полиномиальная регрессия для листа var3, а также прогноз годовой зарплаты. В первой части признак x2 оказался полезнее x1: R² линейной модели составил около 0,73. Во второй части сравнены полиномы второй и третьей степени, их результаты сопоставлены с прямой.
+# Для листа var3 выполнены простая и полиномиальная регрессия. Модель по x2 точнее модели по x1; полиномы второй и третьей степени не дают существенного преимущества перед прямой.
 # 
-# Для salary проверены пропуски и дубликаты, обработаны крайние зарплаты только в обучающей части, категории преобразованы в числовые столбцы, числовые признаки стандартизированы. Сравнены линейная регрессия, kNN и дерево решений по четырём метрикам. Лучший метод по MAE и его показатели приведены выше. Редкие высокие зарплаты затрудняют прогноз, поэтому качество необходимо оценивать вместе по таблице метрик и графикам.
+# Для salary.csv сохранены все 1500 записей. После разбиения 1125 строк используются для обучения и 375 — для валидации. Экстремальные значения не удалялись и не изменялись. Категории закодированы, числовые признаки стандартизированы по обучающей части. Сравнены линейная регрессия, kNN и дерево решений по четырём метрикам. Графики снабжены подписями осей и легендами.
 # 
-# В данных также встречаются неправдоподобные сочетания возраста и опыта. Без сведений об источнике они не исправлялись по предположению. Для практического применения потребовалась бы проверка качества исходных данных.
+# Вывод о предпочтительном методе делается по пересчитанным метрикам. Редкие высокие зарплаты усложняют прогноз; оценка относится к этому набору и выбранному разбиению.
+# 
+# На полной выборке сохранены 1500 строк (train 1125, valid 375). По MAE минимальная ошибка у метода «Линейная регрессия»: 34926.60. По RMSE минимальная ошибка у метода «Линейная регрессия»: 106030.04. У всех трёх моделей R² отрицательный: качество по квадрату ошибки не превосходит прогноз среднего оцениваемой выборки. Это ограничение результата, а не причина удалять неудобные наблюдения.
