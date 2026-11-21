@@ -1,0 +1,227 @@
+MySQL 8.0.46. Isolated schema: gibdd_lr8_test
+Source: lab4_gibdd/04_gibdd_dump_tested.sql
+Official test SQL uses gibdd; only schema names were replaced for this verification.
+Source tables before tests (SHA-256 of ordered SELECT):
+{'citizens': '842fd1c5da853f0e193ff3712d249b5fa6d51fda77e86e0f22812c234d2728a6', 'cars': '432e8f9c75068dab6a0fef7cc78d5861ed8cda3800f8d99badb97c3ad93d3a99', 'accidents': '1e0a6bcd82c504fdc6545d02a61b89ea813599f111738c2ef4010627fabb20d0', 'accident_cars': 'c6cfc40c0def52318ff950107e00ca2fa5abdc2b775276010a2aed3649d2b254', 'sales': '8eb136f09c2e47eb83e6876135abda0c533b4e8a69ccb0ce4c70200ab8c6bd46'}
+
+FILE: 00_check_database.sql
++---------------+----------------+-------------+
+| mysql_version | db             | server_date |
++---------------+----------------+-------------+
+| 8.0.46        | gibdd_lr8_test | 2026-11-21  |
++---------------+----------------+-------------+
++---------------+--------+
+| TABLE_NAME    | ENGINE |
++---------------+--------+
+| accident_cars | InnoDB |
+| accidents     | InnoDB |
+| cars          | InnoDB |
+| citizens      | InnoDB |
+| sales         | InnoDB |
++---------------+--------+
++---------------+-----------+
+| table_name    | row_count |
++---------------+-----------+
+| citizens      |        10 |
+| cars          |        10 |
+| accidents     |         5 |
+| accident_cars |        10 |
+| sales         |         5 |
++---------------+-----------+
++-------+-------------+
+| carId | releaseYear |
++-------+-------------+
+|     1 |        2020 |
+|     2 |        2019 |
++-------+-------------+
++---------------------+
+| first_accident_year |
++---------------------+
+|                2025 |
++---------------------+
++-------------------------+--------+---------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------+------------------------+-----------------------------------------------------------------------------------------------------------------------+----------------+----------------------+----------------------+--------------------+
+| Trigger                 | Event  | Table         | Statement                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Timing | Created                | sql_mode                                                                                                              | Definer        | character_set_client | collation_connection | Database Collation |
++-------------------------+--------+---------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------+------------------------+-----------------------------------------------------------------------------------------------------------------------+----------------+----------------------+----------------------+--------------------+
+| lr8_bd_last_participant | DELETE | accident_cars | BEGIN
+    DECLARE v_count INT DEFAULT 0;
+    
+    SELECT COUNT(*) INTO v_count
+    FROM accident_cars
+    WHERE accidentId=OLD.accidentId;
+    
+    IF v_count <= 1 THEN
+        
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'LR8: last participant';
+    END IF;
+END                                                                                                                                                                                 | BEFORE | 2026-11-21 17:23:01.68 | ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION | root@localhost | utf8mb4              | utf8mb4_0900_ai_ci   | utf8mb4_0900_ai_ci |
+| lr8_bi_accident_date    | INSERT | accidents     | BEGIN
+    
+    
+    IF NEW.accidentDate > CURRENT_DATE() THEN
+        
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'LR8: future accident date';
+    END IF;
+END                                                                                                                                                                                                                                                                                        | BEFORE | 2026-11-21 17:23:01.68 | ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION | root@localhost | utf8mb4              | utf8mb4_0900_ai_ci   | utf8mb4_0900_ai_ci |
+| lr8_bu_car_year         | UPDATE | cars          | BEGIN
+    
+    IF NEW.releaseYear <> OLD.releaseYear THEN
+        
+        IF EXISTS (
+            SELECT 1
+            FROM accident_cars ac
+            JOIN accidents a ON a.accidentId=ac.accidentId
+            WHERE ac.carId=OLD.carId
+              AND YEAR(a.accidentDate) < NEW.releaseYear
+        ) THEN
+            
+            SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'LR8: car newer than accident';
+        END IF;
+    END IF;
+END | BEFORE | 2026-11-21 17:23:01.68 | ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION | root@localhost | utf8mb4              | utf8mb4_0900_ai_ci   | utf8mb4_0900_ai_ci |
++-------------------------+--------+---------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------+------------------------+-----------------------------------------------------------------------------------------------------------------------+----------------+----------------------+----------------------+--------------------+
+
+
+
+FILE: 02_positive_tests.sql
++------------+--------------+----------+
+| accidentId | accidentDate | city     |
++------------+--------------+----------+
+|          6 | 2025-11-01   | LR8_TEST |
++------------+--------------+----------+
++---------------------+
+| rows_after_rollback |
++---------------------+
+|                   0 |
++---------------------+
++-------+-------------+
+| carId | year_before |
++-------+-------------+
+|     1 |        2020 |
++-------+-------------+
++-------+------------+
+| carId | year_after |
++-------+------------+
+|     1 |       2021 |
++-------+------------+
++-------+---------------+
+| carId | year_restored |
++-------+---------------+
+|     1 |          2020 |
++-------+---------------+
++---------------------+--------------------+
+| participants_before | participants_after |
++---------------------+--------------------+
+|                   2 |                  1 |
++---------------------+--------------------+
++------------------------------------+
+| temporary_accidents_after_rollback |
++------------------------------------+
+|                                  0 |
++------------------------------------+
+
+
+
+FILE: 03_negative_insert.sql
++-------------+------------+
+| rows_before | rows_after |
++-------------+------------+
+|           5 |          5 |
++-------------+------------+
+
+ERROR 1644 (45000) at line 6: LR8: future accident date
+
+
+FILE: 04_negative_update.sql
++-------+-------------+
+| carId | year_before |
++-------+-------------+
+|     1 |        2020 |
++-------+-------------+
++-------+------------------+
+| carId | year_after_error |
++-------+------------------+
+|     1 |             2020 |
++-------+------------------+
+
+ERROR 1644 (45000) at line 6: LR8: car newer than accident
+
+
+FILE: 05_negative_delete.sql
++--------------------------+
+| participants_after_error |
++--------------------------+
+|                        1 |
++--------------------------+
++------------------------------------+
+| temporary_accidents_after_rollback |
++------------------------------------+
+|                                  0 |
++------------------------------------+
+
+ERROR 1644 (45000) at line 9: LR8: last participant
+
+
+FILE: 06_list_and_final_check.sql
++-------------------------+--------------------+---------------+--------------------+
+| TRIGGER_NAME            | EVENT_MANIPULATION | ACTION_TIMING | EVENT_OBJECT_TABLE |
++-------------------------+--------------------+---------------+--------------------+
+| lr8_bd_last_participant | DELETE             | BEFORE        | accident_cars      |
+| lr8_bi_accident_date    | INSERT             | BEFORE        | accidents          |
+| lr8_bu_car_year         | UPDATE             | BEFORE        | cars               |
++-------------------------+--------------------+---------------+--------------------+
++---------------+-----------+
+| table_name    | row_count |
++---------------+-----------+
+| citizens      |        10 |
+| cars          |        10 |
+| accidents     |         5 |
+| accident_cars |        10 |
+| sales         |         5 |
++---------------+-----------+
++-------+-------------+
+| carId | releaseYear |
++-------+-------------+
+|     1 |        2020 |
++-------+-------------+
++----------------+
+| test_rows_left |
++----------------+
+|              0 |
++----------------+
+
+
+
+ADDITIONAL BOUNDARY AND BRANCH TESTS
++------------------+
+| today_is_allowed |
++------------------+
+| PASS             |
++------------------+
++--------------------------+
+| same_year_update_allowed |
++--------------------------+
+| PASS                     |
++--------------------------+
++---------------------------+
+| no_accidents_year_allowed |
++---------------------------+
+| PASS                      |
++---------------------------+
++----------------------------------+
+| failed_multirow_delete_is_atomic |
++----------------------------------+
+| PASS                             |
++----------------------------------+
+
+ERROR 1644 (45000) at line 17: LR8: last participant
+
+
+PASS: six official positive/negative cases verified; all expected errors were Error 1644 / SQLSTATE 45000.
+PASS: current date accepted, unchanged year accepted, car without ДТП accepted, failed multirow DELETE restored all rows.
+PASS: all five source tables exactly match the baseline after every test (row hashes).
+NOTE: ROLLBACK restores rows, not consumed AUTO_INCREMENT values. Trigger DDL remains installed.
+Scope: sequential tests in one connection; concurrency not tested.
+PASS: trigger listings extracted from report DOCX compile and produce the same three expected errors.
