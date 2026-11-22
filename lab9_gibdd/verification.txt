@@ -1,0 +1,267 @@
+MySQL 8.0.46; isolated disposable container, no published ports.
+Учебные команды выполнены на копии gibdd из дампа №4 с функциями №7 и триггерами №8.
+Учётные записи и пароли из комплекта — демонстрационные, не реальные данные пользователя.
+BASELINE SHA-256:
+{'citizens': '842fd1c5da853f0e193ff3712d249b5fa6d51fda77e86e0f22812c234d2728a6', 'cars': '432e8f9c75068dab6a0fef7cc78d5861ed8cda3800f8d99badb97c3ad93d3a99', 'accidents': '1e0a6bcd82c504fdc6545d02a61b89ea813599f111738c2ef4010627fabb20d0', 'accident_cars': 'c6cfc40c0def52318ff950107e00ca2fa5abdc2b775276010a2aed3649d2b254', 'sales': '8eb136f09c2e47eb83e6876135abda0c533b4e8a69ccb0ce4c70200ab8c6bd46', 'routines': '2e300f7310d25d1ebf3769ba32772895247ce16c07964cc549839f9d4802a08c', 'triggers': '462667160d109ff5d0fae8cfc9d789b1b475b0a7d219e4d4a6a3bb392437d248'}
+
+FILE: 00_preflight.sql
++---------------+----------------+
+| mysql_version | admin_account  |
++---------------+----------------+
+| 8.0.46        | root@localhost |
++---------------+----------------+
++------------------+
+| Database (gibdd) |
++------------------+
+| gibdd            |
++------------------+
++---------------+-----------+
+| table_name    | row_count |
++---------------+-----------+
+| citizens      |        10 |
+| cars          |        10 |
+| accidents     |         5 |
+| accident_cars |        10 |
+| sales         |         5 |
++---------------+-----------+
+
+
+FILE: 01_create_accounts.sql
+
+
+FILE: 02_grant_roles.sql
+
+
+FILE: 03_audit_users_roles.sql
++-----------------+-----------+----------------+-------------+-------------+-------------+-------------+------------+------------------+
+| User            | Host      | account_locked | Select_priv | Insert_priv | Update_priv | Delete_priv | Grant_priv | Create_user_priv |
++-----------------+-----------+----------------+-------------+-------------+-------------+-------------+------------+------------------+
+| lr9_admin       | localhost | N              | N           | N           | N           | N           | N          | N                |
+| lr9_analyst     | localhost | N              | N           | N           | N           | N           | N          | N                |
+| lr9_demo        | localhost | Y              | N           | N           | N           | N           | N          | N                |
+| lr9_empty       | localhost | Y              | N           | N           | N           | N           | N          | N                |
+| lr9_inspector   | localhost | N              | N           | N           | N           | N           | N          | N                |
+| lr9_role_admin  | %         | Y              | N           | N           | N           | N           | N          | N                |
+| lr9_role_reader | %         | Y              | N           | N           | N           | N           | N          | N                |
++-----------------+-----------+----------------+-------------+-------------+-------------+-------------+------------+------------------+
++--------------------------------------------------------------------------------+
+| Grants for lr9_admin@localhost                                                 |
++--------------------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `lr9_admin`@`localhost`                                  |
+| GRANT ALL PRIVILEGES ON `gibdd`.* TO `lr9_admin`@`localhost` WITH GRANT OPTION |
+| GRANT `lr9_role_admin`@`%` TO `lr9_admin`@`localhost` WITH ADMIN OPTION        |
++--------------------------------------------------------------------------------+
++----------------------------------------------------------------------+
+| Grants for lr9_analyst@localhost                                     |
++----------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `lr9_analyst`@`localhost`                      |
+| GRANT SELECT ON `gibdd`.`accident_cars` TO `lr9_analyst`@`localhost` |
+| GRANT SELECT ON `gibdd`.`accidents` TO `lr9_analyst`@`localhost`     |
+| GRANT SELECT ON `gibdd`.`cars` TO `lr9_analyst`@`localhost`          |
+| GRANT `lr9_role_reader`@`%` TO `lr9_analyst`@`localhost`             |
++----------------------------------------------------------------------+
++----------------------------------------------------------------------------------------+
+| Grants for lr9_inspector@localhost                                                     |
++----------------------------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `lr9_inspector`@`localhost`                                      |
+| GRANT SELECT, INSERT, UPDATE ON `gibdd`.`accident_cars` TO `lr9_inspector`@`localhost` |
+| GRANT SELECT, INSERT, UPDATE ON `gibdd`.`accidents` TO `lr9_inspector`@`localhost`     |
+| GRANT SELECT ON `gibdd`.`cars` TO `lr9_inspector`@`localhost`                          |
+| GRANT `lr9_role_reader`@`%` TO `lr9_inspector`@`localhost`                             |
++----------------------------------------------------------------------------------------+
++-----------------+-----------+---------------+---------------+-------------------+
+| role_name       | role_host | assigned_user | assigned_host | WITH_ADMIN_OPTION |
++-----------------+-----------+---------------+---------------+-------------------+
+| lr9_role_admin  | %         | lr9_admin     | localhost     | Y                 |
+| lr9_role_reader | %         | lr9_analyst   | localhost     | N                 |
+| lr9_role_reader | %         | lr9_inspector | localhost     | N                 |
++-----------------+-----------+---------------+---------------+-------------------+
++---------------+-----------+-------------------+-------------------+
+| USER          | HOST      | DEFAULT_ROLE_USER | DEFAULT_ROLE_HOST |
++---------------+-----------+-------------------+-------------------+
+| lr9_admin     | localhost | lr9_role_admin    | %                 |
+| lr9_analyst   | localhost | lr9_role_reader   | %                 |
+| lr9_inspector | localhost | lr9_role_reader   | %                 |
++---------------+-----------+-------------------+-------------------+
++---------------+-----------+---------------+
+| User          | Host      | database_name |
++---------------+-----------+---------------+
+| lr9_admin     | localhost | gibdd         |
+| lr9_analyst   | localhost | gibdd         |
+| lr9_inspector | localhost | gibdd         |
++---------------+-----------+---------------+
+
+
+FILE: 04_analyst_tests.sql; SESSION: lr9_analyst
++-----------------------+-----------------------+-----------------------+
+| connection_identity   | matched_account       | active_roles          |
++-----------------------+-----------------------+-----------------------+
+| lr9_analyst@localhost | lr9_analyst@localhost | `lr9_role_reader`@`%` |
++-----------------------+-----------------------+-----------------------+
++------------+--------------+
+| accidentId | accidentDate |
++------------+--------------+
+|          1 | 2025-08-12   |
+|          2 | 2025-09-03   |
+|          3 | 2025-09-17   |
+|          4 | 2025-10-05   |
+|          5 | 2025-10-21   |
++------------+--------------+
+
+ERROR 1142 (42000) at line 9: UPDATE command denied to user 'lr9_analyst'@'localhost' for table 'cars'
+
+
+FILE: 05_inspector_tests.sql; SESSION: lr9_inspector
++-------------------------+-----------------------+
+| matched_account         | active_roles          |
++-------------------------+-----------------------+
+| lr9_inspector@localhost | `lr9_role_reader`@`%` |
++-------------------------+-----------------------+
++------------+--------------+----------+
+| accidentId | accidentDate | city     |
++------------+--------------+----------+
+|          6 | 2025-11-01   | LR9_TEST |
++------------+--------------+----------+
++---------------------+
+| rows_after_rollback |
++---------------------+
+|                   0 |
++---------------------+
+
+ERROR 1142 (42000) at line 17: DELETE command denied to user 'lr9_inspector'@'localhost' for table 'accident_cars'
+
+
+FILE: 06_admin_tests.sql; SESSION: lr9_admin
++---------------------+----------------------+
+| matched_account     | active_roles         |
++---------------------+----------------------+
+| lr9_admin@localhost | `lr9_role_admin`@`%` |
++---------------------+----------------------+
++-------+-------------+------+-----+---------+-------+
+| Field | Type        | Null | Key | Default | Extra |
++-------+-------------+------+-----+---------+-------+
+| id    | int         | NO   | PRI | NULL    | NULL  |
+| note  | varchar(30) | YES  |     | NULL    | NULL  |
++-------+-------------+------+-----+---------+-------+
++----+-----------------+
+| id | note            |
++----+-----------------+
+|  1 | LR9 admin check |
++----+-----------------+
+
+ERROR 1142 (42000) at line 13: SELECT command denied to user 'lr9_admin'@'localhost' for table 'user'
+
+
+FILE: 07_demo_global_all.sql
++--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Grants for lr9_demo@localhost                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
++--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, RELOAD, SHUTDOWN, PROCESS, FILE, REFERENCES, INDEX, ALTER, SHOW DATABASES, SUPER, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, REPLICATION SLAVE, REPLICATION CLIENT, CREATE VIEW, SHOW VIEW, CREATE ROUTINE, ALTER ROUTINE, CREATE USER, EVENT, TRIGGER, CREATE TABLESPACE, CREATE ROLE, DROP ROLE ON *.* TO `lr9_demo`@`localhost`                                                                                                                                                                                                                                                                                                                                                                                     |
+| GRANT APPLICATION_PASSWORD_ADMIN,AUDIT_ABORT_EXEMPT,AUDIT_ADMIN,AUTHENTICATION_POLICY_ADMIN,BACKUP_ADMIN,BINLOG_ADMIN,BINLOG_ENCRYPTION_ADMIN,CLONE_ADMIN,CONNECTION_ADMIN,ENCRYPTION_KEY_ADMIN,FIREWALL_EXEMPT,FLUSH_OPTIMIZER_COSTS,FLUSH_STATUS,FLUSH_TABLES,FLUSH_USER_RESOURCES,GROUP_REPLICATION_ADMIN,GROUP_REPLICATION_STREAM,INNODB_REDO_LOG_ARCHIVE,INNODB_REDO_LOG_ENABLE,PASSWORDLESS_USER_ADMIN,PERSIST_RO_VARIABLES_ADMIN,REPLICATION_APPLIER,REPLICATION_SLAVE_ADMIN,RESOURCE_GROUP_ADMIN,RESOURCE_GROUP_USER,ROLE_ADMIN,SENSITIVE_VARIABLES_OBSERVER,SERVICE_CONNECTION_ADMIN,SESSION_VARIABLES_ADMIN,SET_USER_ID,SHOW_ROUTINE,SYSTEM_USER,SYSTEM_VARIABLES_ADMIN,TABLE_ENCRYPTION_ADMIN,TELEMETRY_LOG_ADMIN,XA_RECOVER_ADMIN ON *.* TO `lr9_demo`@`localhost` |
++--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
++----------+-----------+----------------+
+| User     | Host      | account_locked |
++----------+-----------+----------------+
+| lr9_demo | localhost | Y              |
++----------+-----------+----------------+
++----------------------------------------------+
+| Grants for lr9_demo@localhost                |
++----------------------------------------------+
+| GRANT USAGE ON *.* TO `lr9_demo`@`localhost` |
++----------------------------------------------+
+
+
+FILE: 08_demo_usage.sql
++-----------------------------------------------+
+| Grants for lr9_empty@localhost                |
++-----------------------------------------------+
+| GRANT USAGE ON *.* TO `lr9_empty`@`localhost` |
++-----------------------------------------------+
++-----------------------------------------------------------------+
+| Grants for lr9_empty@localhost                                  |
++-----------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `lr9_empty`@`localhost` WITH GRANT OPTION |
++-----------------------------------------------------------------+
++-----------------------------------------------+
+| Grants for lr9_empty@localhost                |
++-----------------------------------------------+
+| GRANT USAGE ON *.* TO `lr9_empty`@`localhost` |
++-----------------------------------------------+
+
+
+FILE: 09_demo_selective_revoke.sql
++--------------------------------------------------------------------------------------------------------------+
+| Grants for lr9_demo@localhost                                                                                |
++--------------------------------------------------------------------------------------------------------------+
+| GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, ALTER ON *.* TO `lr9_demo`@`localhost` WITH GRANT OPTION |
++--------------------------------------------------------------------------------------------------------------+
++----------------------------------------------+
+| Grants for lr9_demo@localhost                |
++----------------------------------------------+
+| GRANT USAGE ON *.* TO `lr9_demo`@`localhost` |
++----------------------------------------------+
++----------------------------------------------+
+| Grants for lr9_demo@localhost                |
++----------------------------------------------+
+| GRANT USAGE ON *.* TO `lr9_demo`@`localhost` |
++----------------------------------------------+
+
+
+FILE: 10_extra_and_final.sql
++-----------+-----------+----------------+------------------+
+| User      | Host      | account_locked | password_expired |
++-----------+-----------+----------------+------------------+
+| lr9_empty | localhost | Y              | Y                |
++-----------+-----------+----------------+------------------+
++-----------------+-----------+-------------+-------------+-------------+-------------+-------------+-----------+------------+------------------+
+| User            | Host      | Select_priv | Insert_priv | Update_priv | Delete_priv | Create_priv | Drop_priv | Grant_priv | Create_user_priv |
++-----------------+-----------+-------------+-------------+-------------+-------------+-------------+-----------+------------+------------------+
+| lr9_admin       | localhost | N           | N           | N           | N           | N           | N         | N          | N                |
+| lr9_analyst     | localhost | N           | N           | N           | N           | N           | N         | N          | N                |
+| lr9_demo        | localhost | N           | N           | N           | N           | N           | N         | N          | N                |
+| lr9_empty       | localhost | N           | N           | N           | N           | N           | N         | N          | N                |
+| lr9_inspector   | localhost | N           | N           | N           | N           | N           | N         | N          | N                |
+| lr9_role_admin  | %         | N           | N           | N           | N           | N           | N         | N          | N                |
+| lr9_role_reader | %         | N           | N           | N           | N           | N           | N         | N          | N                |
++-----------------+-----------+-------------+-------------+-------------+-------------+-------------+-----------+------------+------------------+
++-----------------------+
+| dynamic_global_grants |
++-----------------------+
+|                     0 |
++-----------------------+
++---------------+-----------+
+| table_name    | row_count |
++---------------+-----------+
+| citizens      |        10 |
+| cars          |        10 |
+| accidents     |         5 |
+| accident_cars |        10 |
+| sales         |         5 |
++---------------+-----------+
++----------------+
+| test_rows_left |
++----------------+
+|              0 |
++----------------+
+
+LOCK CHECK lr9_demo: denied as expected (account locked).
+LOCK CHECK lr9_empty: denied as expected (account locked).
+
+PASS: real logins as all three domain users; intended default roles active.
+PASS: analyst SELECT permitted and UPDATE denied with 1142.
+PASS: inspector INSERT permitted, ROLLBACK restores records, DELETE denied with 1142.
+PASS: database admin temporary DDL permitted, SELECT mysql.user denied with 1142.
+PASS: two roles; one assignment to admin role, two to reader role.
+PASS: all global static/dynamic demo privileges revoked; both demo accounts locked.
+PASS: three accounts only receive database/table-scoped application privileges.
+PASS: all five data tables, functions and triggers exactly match baseline hashes.
+NOTE: global privileges were issued only to the locked training account on an isolated local server.
+PASS: CREATE USER/ROLE and GRANT/SET DEFAULT ROLE listings extracted from report compile (temporary lr9doc_ names).
+PASS: final role-aware access query in report returns all three application users.
++---------------+-----------+---------------+
+| User          | Host      | database_name |
++---------------+-----------+---------------+
+| lr9_admin     | localhost | gibdd         |
+| lr9_analyst   | localhost | gibdd         |
+| lr9_inspector | localhost | gibdd         |
++---------------+-----------+---------------+
